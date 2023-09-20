@@ -1,0 +1,5 @@
+
+# ignore these django folders
+media/
+static/
+db.sqlite3
