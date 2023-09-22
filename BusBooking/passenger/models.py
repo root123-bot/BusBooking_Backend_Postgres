@@ -11,7 +11,7 @@ from BusBooking.main.models import Avatar
 class Profile(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, related_name="passenger")
     avatar = models.OneToOneField(Avatar, on_delete=models.SET_NULL, null=True, blank=True)
-
+    usergroup = models.CharField(max_length=50, default="passenger")
     def __str__(self):
         return self.user.phone_number
     

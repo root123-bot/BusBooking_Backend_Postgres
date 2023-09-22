@@ -46,6 +46,7 @@ class ValidateOTPAPIView(APIView):
         try:
             phone = request.data.get('phone_number')
             OTP = request.data.get('otp')
+            print("RECEIVED OTP ", OTP, phone)
             userOTP = UserOTP.objects.filter(phone=phone, otp=OTP)
             if userOTP.count() > 0:
                 userOTP = userOTP.first()

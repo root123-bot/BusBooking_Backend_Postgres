@@ -10,4 +10,5 @@ class PassengerProfileSerializer(ModelSerializer):
             'id',
             'get_avatar',
             'phone_number',
+            'usergroup',
         ]
