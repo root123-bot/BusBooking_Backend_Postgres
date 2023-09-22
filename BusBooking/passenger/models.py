@@ -33,3 +33,7 @@ class Profile(models.Model):
     @property
     def get_avatar(self):
         return self.avatar.image.url if self.avatar else None
+    
+    @property
+    def get_user_id(self):
+        return self.user.id

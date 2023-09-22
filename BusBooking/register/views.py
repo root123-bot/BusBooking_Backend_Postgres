@@ -158,7 +158,7 @@ class RegisterUserAPIView(APIView):
             # this means we user try to add the same phone number twice
             return Response({
                 "message": "User already exist"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_409_CONFLICT)
         
         # that's why we use this except to catch all the other errors
         except Exception as e:
