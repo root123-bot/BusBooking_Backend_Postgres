@@ -22,7 +22,7 @@ class Profile(models.Model):
     # what is the meaning of .order_by('?')... it means order by random and '?' means random
     def save(self, *args, **kwargs):
         if not self.avatar:
-            self.avatar = Avatar.objects.order_by('?').first()
+            self.avatar = Avatar.objects.filter(name="default").order_by('?').first()
         super(Profile, self).save(*args, **kwargs)
 
 
