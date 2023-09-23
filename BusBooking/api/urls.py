@@ -6,6 +6,8 @@ from BusBooking.main.views import *
 
 
 urlpatterns = [
+    url(r'delete_user/$', delete_user, name='delete_user'),
+    url(r'userdetails/$', user_details, name='login_user'),
     url(r'login/$', login, name='login_user'),
     url(r'register/$', register_user, name='register_user'),
     url(r'isuserexist/$', is_user_exist, name='isuserexist'),
