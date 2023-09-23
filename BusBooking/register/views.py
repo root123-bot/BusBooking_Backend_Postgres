@@ -31,7 +31,7 @@ class IsUserExist(APIView):
             return Response({
                 "message": "User exist",
                 "user_id": user.last().id,
-                "user_group": "customer" if hasattr(user.last(), "customer") else "kibanda",
+                "user_group": "passenger",
             }, status=status.HTTP_200_OK)
         else:
             return Response({
@@ -209,3 +209,29 @@ class LoginAPIView(APIView):
 
 
 login = LoginAPIView.as_view()            
+
+class ResetPIN(APIView):
+    def post(self, request):
+        try:
+            user_id = request.data.get('user_id')
+            new_pin = request.data.get('pin')
+            user = get_user_model().objects.get(id=int(user_id))
+            user.password = new_pin
+            user.save()
+
+            if hasattr(user, 'passenger'):
+                passenger = user.passenger
+                serialize = PassengerProfileSerializer(passenger)
+                return Response(serialize.data, status=status.HTTP_200_OK)
+            
+            return Response({
+                "message": "Unrecognized user group"
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        except Exception as e:
+            print(e)
+            return Response({
+                "message": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+reset_pin = ResetPIN.as_view()
