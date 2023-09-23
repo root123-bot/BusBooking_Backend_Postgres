@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework import status
 from BusBooking.passenger.serializers import *
+from BusBooking.main.serializers import *
 from .models import *
 import string, random
 from django.urls import reverse
@@ -42,3 +43,11 @@ class DeleteUserAPIView(APIView):
             return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 delete_user = DeleteUserAPIView.as_view()
+
+class Avatars(APIView):
+    def get(self, request):
+        avatars = Avatar.objects.all()
+        serialize = AvatarSerializer(avatars, many=True)
+        return Response(serialize.data, status=status.HTTP_200_OK)
+
+avatars = Avatars.as_view()

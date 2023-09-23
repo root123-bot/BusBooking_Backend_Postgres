@@ -16,3 +16,6 @@ class Avatar(models.Model):
     name = models.CharField(max_length=255)
     image = models.ImageField(upload_to="avatars/")
 
+    @property
+    def get_image(self):
+        return self.image.url
