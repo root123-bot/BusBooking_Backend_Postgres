@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from BusBooking.utils.index import sendOTP
 from BusBooking.main.models import *
 from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
 from rest_framework.views import APIView
 from BusBooking.passenger.serializers import *
@@ -216,7 +217,7 @@ class ResetPIN(APIView):
             user_id = request.data.get('user_id')
             new_pin = request.data.get('pin')
             user = get_user_model().objects.get(id=int(user_id))
-            user.password = new_pin
+            user.password = make_password(new_pin)
             user.save()
 
             if hasattr(user, 'passenger'):
