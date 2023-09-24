@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from BusBooking.passenger.serializers import *
 from BusBooking.main.serializers import *
+from BusBooking.main.models import *
 from .models import *
 import string, random
 from django.urls import reverse
@@ -13,12 +14,13 @@ from django.http import HttpResponseRedirect
 from django.views import View
 import datetime
 
+
 # Create your views here.
 class UserDetalsAPIView(APIView):
     def post(self, request, *args, **kwargs):
         
         user_id = request.data.get('user_id')
-        print('this is user id ', user_id)
+        # print('this is user id ', user_id)
         try:
             user = get_user_model().objects.get(id=int(user_id))
             if hasattr(user, 'passenger'):
@@ -51,3 +53,27 @@ class Avatars(APIView):
         return Response(serialize.data, status=status.HTTP_200_OK)
 
 avatars = Avatars.as_view()
+
+class UpdateProfileAvatar(APIView):
+    def post(self, request):
+        try: 
+            avatar_id = request.data.get('avatar_id')
+            user_id = request.data.get('user_id')
+
+            avatar = Avatar.objects.get(id=int(avatar_id))
+            user = get_user_model().objects.get(id=int(user_id))
+
+            passenger = user.passenger
+            passenger.avatar = avatar
+            passenger.save()
+
+            return Response({
+                "message": "Success"
+            }, status=status.HTTP_200_OK)
+        
+        except Exception as err:
+            return Response({
+                "details": str(err)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+update_avatar = UpdateProfileAvatar.as_view()
