@@ -3,9 +3,10 @@ from django.conf.urls import url
 from BusBooking.register.views import *
 from django.views.generic import TemplateView
 from BusBooking.main.views import *
-
+from BusBooking.bus.views import *
 
 urlpatterns = [
+    url(r'alltrips/$', all_trips, name='bustrips'),
     url(r'updateavatar/$', update_avatar, name="updateavatar"),
     url(r'resetpin/$', reset_pin, name='resetpin'),
     url(r'avatars/$', avatars, name='avatars'),
