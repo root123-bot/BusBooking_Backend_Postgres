@@ -53,7 +53,7 @@ class BusImages(models.Model):
 # but naweza nikamwambia hizi seat tuzipe number na sio lazima yeye anitumie mimi label but inabidi tukubaliane if we use
 # number as our label in our system we should make sure they also use number to label their seats in their buses.
 class BusSeatLayout(models.Model):
-    bus = models.OneToOneField('BusInfo', on_delete=models.CASCADE)
+    bus = models.OneToOneField('BusInfo', on_delete=models.CASCADE, related_name="seatmetadata")
     total_seats = models.IntegerField() # VERY USEFUL, hii ina umuhimu kwenye kujua siti ngapi zimebakia, don't forget to tell "Adelina" to avoid including the seats which are not in 2 by 2 or 1 by 2... just understand the logic here...
     rows = models.CharField(max_length=500) # having rows can help us to position seats even if its 1 by 2, 2 by 3 and so on.
     seat_type = models.CharField(choices=SEAT_LAYOUT, max_length=50)  # here i will have category of 1 * 2, 2 * 2 or 2 * 3 so as to know the seat layout, ni lazima umwambie boss kuwa hizo seat zinaidi ziwe na label kama za mabasi makubwa ili kujua ni siti ipi mtu amelipia
@@ -111,7 +111,7 @@ class BusBooking(models.Model):
 class BookedSeat(models.Model):
     passenger_name = models.CharField(max_length=500)
     phone = models.CharField(max_length=500)
-    booked_by = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    booked_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE) # one passenger can have many booking ok.
     seat_info = models.OneToOneField('BusSeat', on_delete=models.CASCADE)
     
 # these are the seats of the bus, usisahau inabidi umwambie madam kuwa siti inabidi ziwe na label
@@ -145,31 +145,46 @@ class BusInfo(models.Model):
         # lets have booking which booking date is at least today
         # and then we'll have booked seats of that bus
         # and then we'll have total seats of that bus
-        print("OUT TARGET BUS ", self.bus_name)
+        # print("OUT TARGET BUS ", self.bus_name)
         # __gte means greater than or equal to, __lte means less than or equal to
         bks = BusBooking.objects.all()
         # print("BKS ", bks.first().booking_date)
-        print("FILTERED ", bks.filter(booking_date__gte=datetime.today().date()))
-        print("FILTERED WITH BUS", bks.filter(booking_date__gte=datetime.today().date(), bus=self))
+        # print("FILTERED ", bks.filter(booking_date__gte=datetime.today().date()))
+        # print("FILTERED WITH BUS", bks.filter(booking_date__gte=datetime.today().date(), bus=self))
         bookings = BusBooking.objects.filter(booking_date__gte=datetime.today().date(), bus=self)
-        print("BOOKINGS ", bookings)
+        # print("BOOKINGS ", bookings)
+        # print("SOMETIMES WE'RE GETTING ZERO BOOKING BECAUSE THE CURRENT BOOKING IS OLD ONE JUST LOOK AT ABOVE CONDITION ONLY BOOKING WHICH HAVE BEEN PLACED TODAY OR ON NEXT DAY SO IF WE'RE HAVING THE ONE WHICH IS BEFORE TODAY IT WILL NOT BE RETURNED, IT CAN BE MONDAY BUT DIFFERENT DATE REMEMBER THIS")
         # ok now we have those bookings, i think for each booking i should return metadata or dictionary
         # of it with "total_seats" and "booked_seats" and then i should return the difference of those two
         # make sure u store all booking inside the list
         booking_metadata = []
-
         for booking in bookings:
-            print('STILL INSIDE')
+            # print('STILL INSIDE')
             # lets have total seats of that bus
             total_seats = BusSeatLayout.objects.get(bus=self).total_seats
-            print("Total seats of this bus is ", total_seats)
+            # print("Total seats of this bus is ", total_seats)
             # lets have booked seats of that bus
-            booked_seats = booking.seats.count()
-            print("Booked seats of this bus is ", booked_seats)
+            # how to get booked seats my guy....
+            # lets see the relation between bus and booked seats, count the booked seats from the bus booking, but its not okay
+            # since booked seat belong to given booking we should all booking and check the booked_seats then count..
+            # bus available seat should not be calculated here coz bus_booking have total number of booking only for 
+            # given booking, and remember one bus can have many booking right...
+            # lets get all booking of this bus which have same trip source and destination and the same date and departure time
+            # then it will be easy to get available seats of that bus, its okay with booking date to use here since the 
+            # booking date ndo tarehe ya safari.... the same date, bus and trip booking is resolved in bustrip field
+            all_bks = BusBooking.objects.filter(bus=self, booking_date=booking.booking_date, bustrip=booking.bustrip)
+
+            # print("The same date, bus and trip booking ", all_bks)        
+            # lets now calculate the available seats by substructing total seats with booked seats
+            # lets first calculate total seat for each booking in all_bks
+            booked = 0
+            for bk in all_bks:
+                booked += bk.seats.count()
+            print("Booked seats of this bus is ", booked)
             # lets have available seats of that bus
-            available_seats = total_seats - booked_seats
-            print("Available seats of this bus is ", available_seats)
-            # HADI HAPA WE'RE GOOD TO GO
+            remained = total_seats - booked
+            booked_seats = booking.seats.count()
+            # print("Booked seats of this bus is ", booked_seats)
             # lets have booking metadata
             # we can have many trip time for one bus for the same day and same route
             # for example "Abood" dar to moro linaenda mara 3 kwa siku...
@@ -177,7 +192,7 @@ class BusInfo(models.Model):
                 "booking_id": booking.id,
                 "total_seats": total_seats,
                 "booked_seats": booked_seats,
-                "available_seats": available_seats,
+                "available_seats": remained,
                 "trip_date": booking.booking_date,
                 "trip_time": booking.bustrip.bus_departure_time,
                 "created_at": booking.created_at,
@@ -187,12 +202,13 @@ class BusInfo(models.Model):
                 "booking_id": booking.id,
                 "total_seats": total_seats,
                 "booked_seats": booked_seats,
-                "available_seats": available_seats,
+                "available_seats": remained,
                 "trip_date": booking.booking_date,
                 "trip_time": booking.bustrip.bus_departure_time,
                 "created_at": booking.created_at,
                 "updated_at": booking.updated_at
             })
+      
         print("BOOKING METADATA ", booking_metadata)
         return booking_metadata
 
