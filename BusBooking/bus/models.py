@@ -173,7 +173,7 @@ class BusInfo(models.Model):
             # then it will be easy to get available seats of that bus, its okay with booking date to use here since the 
             # booking date ndo tarehe ya safari.... the same date, bus and trip booking is resolved in bustrip field
             all_bks = BusBooking.objects.filter(bus=self, booking_date=booking.booking_date, bustrip=booking.bustrip)
-
+            print("ALL BKS ", all_bks)
             # print("The same date, bus and trip booking ", all_bks)        
             # lets now calculate the available seats by substructing total seats with booked seats
             # lets first calculate total seat for each booking in all_bks
