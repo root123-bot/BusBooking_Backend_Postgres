@@ -137,7 +137,7 @@ class BusInfo(models.Model):
 
     def __str__(self):
         return self.bus_name
-    
+
     # cheat code here is to return all trips of that bus and then take total seats minus booked seats
     @property
     def bookings_metadata(self):
@@ -231,8 +231,8 @@ class BusTrip(models.Model):
     departure_station = models.CharField(max_length=500)
     bus_destination = models.CharField(max_length=50)
     destination_station = models.CharField(max_length=500)
-    bus_departure_time = models.CharField(max_length=500, help_text='eg. 18:00, put format in 24 hours, muda wa basi kuondoka kuanza safari')
     source_arrival_time = models.CharField(max_length=500, help_text='eg. 17:30, put format in 24 hours, muda wa basi kufika kituo cha kuanza safari')
+    bus_departure_time = models.CharField(max_length=500, help_text='eg. 18:00, put format in 24 hours, muda wa basi kuondoka kuanza safari')
     bus_fare = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
