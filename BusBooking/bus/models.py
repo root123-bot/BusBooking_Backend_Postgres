@@ -212,6 +212,22 @@ class BusInfo(models.Model):
         print("BOOKING METADATA ", booking_metadata)
         return booking_metadata
 
+    @property
+    def bus_lugagge(self):
+        luggage = LugaggePrice.objects.filter(bus=self)
+        luggage_metadata = []
+        for lug in luggage:
+            luggage_metadata.append({
+                "id": lug.id,
+                "weight": lug.weight,
+                "price": lug.price,
+                "created_at": lug.created_at,
+                "updated_at": lug.updated_at
+            })
+
+        return luggage_metadata
+    
+
 
 # nashauri kujua if bus lipo siku hiyo tuwe na siku na route linapoenda for example 
 # hiace yangu ya "230" linafanya safari jumatatu(dar - iringa), jumanne(iringa - dar) alhamisi(mwanza - musoma)
@@ -253,7 +269,8 @@ class BusTrip(models.Model):
             "brand_name": self.bus.brand_name,
             "created_at": self.bus.created_at,
             "updated_at": self.bus.updated_at,
-            'bookings_metadata': self.bus.bookings_metadata
+            'bookings_metadata': self.bus.bookings_metadata,
+            'bus_lugagge': self.bus.bus_lugagge
         }
     
 

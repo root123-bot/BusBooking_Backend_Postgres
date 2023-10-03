@@ -13,6 +13,7 @@ class BusInfoSerializers(ModelSerializer):
             'created_at',
             'updated_at',
             'bookings_metadata',
+            'bus_lugagge'
         ]
 
 class BusTripSerializers(ModelSerializer):
