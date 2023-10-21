@@ -34,3 +34,21 @@ class BusTripSerializers(ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
+class BusBookingSerializers(ModelSerializer):
+    class Meta:
+        model = BusBooking
+        fields = [
+            'id',
+            'bookingId',
+            'get_user_id',
+            'booked_seats',
+            'status',
+            'time_to_be_deleted_if_its_not_paid',
+            'mark_it_deleted',
+            'booking_date',
+            'get_bustrip',
+            'created_at',
+            'updated_at',
+            'get_bookerinfo'
+        ]

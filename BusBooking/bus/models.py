@@ -81,7 +81,12 @@ class BusBooking(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     seats = models.ManyToManyField('BookedSeat')
     status = models.CharField(max_length=500, choices=BOOKING_STATUS, default='BOOKED_NOT_PAID')
-    startdatetime_counting_deadline_for_it_to_be_marked_deleted = models.DateTimeField(null=True, blank=True)  # after user filled all the names and phone number of passenger booked when he clicked next
+    # we dont need below booking anymore we can issue api to delete the booking from the frontend
+    # if the time we set in frontend has been issued, but we're also require this field because what
+    # if the user didn't proceed after make booking not paid? We don't mark we delete it forever...
+    # we can give the time of 60 minutes in Backend while in frontend we can have time of 20 to 30 minutes
+    # this field only get applicable if the ticket is not_paid for 1 hour
+    time_to_be_deleted_if_its_not_paid = models.DateTimeField(null=True, blank=True)  # after user filled all the names and phone number of passenger booked when he clicked next
     # we fill this field but the logic is what if its BOOKED_NOT_PAID and the user is in fill details of 
     # tickets but not clicked "next" button, how you gonna solve this issue ok i think we'll use "updated_at"
     # field and we should set it to "40 minutes" since this fields will not be "populated" with value and 
@@ -103,21 +108,87 @@ class BusBooking(models.Model):
     bustrip = models.ForeignKey('BusTrip', on_delete=models.CASCADE, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    booker_info = models.ForeignKey('BookerInfo', null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.bus.bus_name
     
+    @property
+    def bus_info(self):
+        return {
+            "id": self.bus.id,
+            "bus_name": self.bus.bus_name,
+            "plate_number": self.bus.plate_number,
+            "brand_name": self.bus.brand_name,
+            "booking_metadata": self.bus.bookings_metadata,
+            'bus_lugagge': self.bus.bus_lugagge
+        }
+    
+
+    @property
+    def get_user_id(self):
+        return self.user.id 
+    
+    @property
+    def booked_seats(self):
+        seats = self.seats.all()
+        seats_metadata = []
+        for seat in seats:
+            seats_metadata.append({
+                id: seat.id,
+                "seat_info": {
+                    "bus_seat_id": seat.seat_info.id,
+                    "seat_number": seat.seat_number,
+                    "seat_label": seat.seat_label,
+                }
+            })
+
+        return seats_metadata
+    
+
+    @property
+    def get_bustrip(self):
+        bustrip = self.bustrip
+        return {
+            "id": bustrip.id,
+            "day": bustrip.day,
+            "source": bustrip.bus_source,
+            "departure_station": bustrip.departure_station,
+            "bus_destination": bustrip.bus_destination,
+            "destination_station": bustrip.destination_station,
+            "source_arrival_time": bustrip.source_arrival_station,
+            "bus_departure_time": bustrip.bus_departure_time,
+            "bus_fare": bustrip.bus_fare,
+            "destination_arrival_time": bustrip.destination_arrival_time,
+            "created_at": bustrip.created_at,
+            "updated_at": bustrip.updated_at
+        }
+
+    @property
+    def get_bookerinfo(self):
+        booker_info = self.booker_info
+
+        return {
+            "id": booker_info.id,
+            "phone1": booker_info.phone1,
+            "phone2": booker_info.phone2
+        }
+
+# All booked ticket will be presented by one contact...
+class BookerInfo(models.Model):
+    name = models.CharField(max_length=500)
+    phone1 = models.CharField(max_length=500)
+    phone2 = models.CharField(max_length=500)
 class BookedSeat(models.Model):
-    passenger_name = models.CharField(max_length=500)
-    phone = models.CharField(max_length=500)
+    # passenger_name = models.CharField(max_length=500)
+    # phone = models.CharField(max_length=500)
     booked_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE) # one passenger can have many booking ok.
     seat_info = models.OneToOneField('BusSeat', on_delete=models.CASCADE)
     
 # these are the seats of the bus, usisahau inabidi umwambie madam kuwa siti inabidi ziwe na label
 class BusSeat(models.Model):
     bus = models.ForeignKey('BusInfo', on_delete=models.CASCADE)
-    seat_number = models.IntegerField() # i think i don't care about seat number
+    # seat_number = models.IntegerField(blank=True, null=True) # i think i don't care about seat number
     seat_label = models.CharField(max_length=50) # we care about seat label
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -188,6 +259,12 @@ class BusInfo(models.Model):
             # lets have booking metadata
             # we can have many trip time for one bus for the same day and same route
             # for example "Abood" dar to moro linaenda mara 3 kwa siku...
+            seat_labels = []
+            for bs in booking.seats.all():
+                seat_labels.append(
+                    bs.seat_info.seat_label
+                )
+
             print({
                 "booking_id": booking.id,
                 "total_seats": total_seats,
@@ -206,7 +283,8 @@ class BusInfo(models.Model):
                 "trip_date": booking.booking_date,
                 "trip_time": booking.bustrip.bus_departure_time,
                 "created_at": booking.created_at,
-                "updated_at": booking.updated_at
+                "updated_at": booking.updated_at,
+                "booked_seats_labels": seat_labels
             })
       
         print("BOOKING METADATA ", booking_metadata)
