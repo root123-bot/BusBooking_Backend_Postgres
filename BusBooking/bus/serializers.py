@@ -12,6 +12,7 @@ class BusInfoSerializers(ModelSerializer):
             'plate_number',
             'created_at',
             'updated_at',
+            'seat_layout',
             'bookings_metadata',
             'bus_lugagge'
         ]

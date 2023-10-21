@@ -209,6 +209,15 @@ class BusInfo(models.Model):
     def __str__(self):
         return self.bus_name
 
+    @property
+    def seat_layout(self):
+        seatlayout = self.seatmetadata
+        return {
+            "total_seats": seatlayout.total_seats,
+            "rows": seatlayout.rows,
+            "seat_type": seatlayout.seat_type
+        }
+
     # cheat code here is to return all trips of that bus and then take total seats minus booked seats
     @property
     def bookings_metadata(self):
@@ -348,6 +357,7 @@ class BusTrip(models.Model):
             "created_at": self.bus.created_at,
             "updated_at": self.bus.updated_at,
             'bookings_metadata': self.bus.bookings_metadata,
+            "seat_layout": self.bus.seat_layout,
             'bus_lugagge': self.bus.bus_lugagge
         }
     
