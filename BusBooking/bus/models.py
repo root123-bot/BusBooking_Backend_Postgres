@@ -173,12 +173,23 @@ class BusBooking(models.Model):
             "phone1": booker_info.phone1,
             "phone2": booker_info.phone2
         }
+    
+    @property
+    def booking_timeout_to_pay_for_each_cycle(self):
+        mt = OtherMetadata.objects.all()
+        if (mt.count() > 0):
+            return mt.last().booking_timeout_to_pay_for_each_cycle
+        else:
+            return None
 
 # All booked ticket will be presented by one contact...
 class BookerInfo(models.Model):
     name = models.CharField(max_length=500)
     phone1 = models.CharField(max_length=500)
-    phone2 = models.CharField(max_length=500)
+    phone2 = models.CharField(max_length=500, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 class BookedSeat(models.Model):
     # passenger_name = models.CharField(max_length=500)
     # phone = models.CharField(max_length=500)
@@ -195,6 +206,13 @@ class BusSeat(models.Model):
 
     def __str__(self):
         return self.bus.bus_name
+    
+class BusColor(models.Model):
+    color_name = models.CharField(max_length=200, null=True, blank=True)
+    img = models.ImageField(upload_to='images/')
+
+    def __str__(self) :
+        return self.color_name
 
 class BusInfo(models.Model):
     bus_name = models.CharField(max_length=50)
@@ -204,7 +222,7 @@ class BusInfo(models.Model):
     brand_name = models.CharField(max_length=50)   # here i mean manufacturer of that bus
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    primary_color = models.ForeignKey(BusColor, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.bus_name
@@ -216,6 +234,16 @@ class BusInfo(models.Model):
             "total_seats": seatlayout.total_seats,
             "rows": seatlayout.rows,
             "seat_type": seatlayout.seat_type
+        }
+
+    @property
+    def color_metadata(self):
+        color = self.primary_color
+        if (color is None):
+            return None
+        return {
+            "color_name": color.color_name,
+            "img": color.img.url
         }
 
     # cheat code here is to return all trips of that bus and then take total seats minus booked seats
@@ -314,7 +342,16 @@ class BusInfo(models.Model):
 
         return luggage_metadata
     
-
+    @property
+    def booking_timeout_to_pay_for_each_cycle(self):
+        mt = OtherMetadata.objects.all()
+        if (mt.count() > 0):
+            return mt.last().booking_timeout_to_pay_for_each_cycle
+        else:
+            return None
+class OtherMetadata(models.Model):
+    booking_timeout_to_pay_for_each_cycle = models.IntegerField(help_text='In minutes', default=15)
+    
 
 # nashauri kujua if bus lipo siku hiyo tuwe na siku na route linapoenda for example 
 # hiace yangu ya "230" linafanya safari jumatatu(dar - iringa), jumanne(iringa - dar) alhamisi(mwanza - musoma)
@@ -327,6 +364,7 @@ class BusInfo(models.Model):
 # i will drop at "Magufuli bus terminal", i think we should leave them here no need to use terminals
 # but i think it make sense to have these lets call it kituo cha kuondokea na kituo cha kufikia inamake sense
 # ko hapa lets have them i call them "departure_station" and "destination_station"
+
 class BusTrip(models.Model):
     bus = models.ForeignKey(BusInfo, on_delete=models.CASCADE, related_name="bustrip")
     day = models.CharField(choices= DAYS, max_length=500) # monday, tuesday etc
@@ -340,7 +378,6 @@ class BusTrip(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     destination_arrival_time = models.CharField(max_length=500, help_text='eg. 17:30, put format in 24 hours, muda wa basi kufika kituo cha mwisho cha safari')
-
 
     def __str__(self):
         return self.bus.bus_name + ', ' + self.bus_source + ' to ' + self.bus_destination
@@ -360,6 +397,14 @@ class BusTrip(models.Model):
             "seat_layout": self.bus.seat_layout,
             'bus_lugagge': self.bus.bus_lugagge
         }
+    
+    @property
+    def booking_timeout_to_pay_for_each_cycle(self):
+        mt = OtherMetadata.objects.all()
+        if (mt.count() > 0):
+            return mt.last().booking_timeout_to_pay_for_each_cycle
+        else:
+            return None
     
 
 # this payment will be handled manually...

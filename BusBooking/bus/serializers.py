@@ -14,7 +14,9 @@ class BusInfoSerializers(ModelSerializer):
             'updated_at',
             'seat_layout',
             'bookings_metadata',
-            'bus_lugagge'
+            'bus_lugagge',
+            'booking_timeout_to_pay_for_each_cycle',
+            'color_metadata'
         ]
 
 class BusTripSerializers(ModelSerializer):
@@ -34,6 +36,7 @@ class BusTripSerializers(ModelSerializer):
             'destination_arrival_time',
             'created_at',
             'updated_at',
+            'booking_timeout_to_pay_for_each_cycle'
         ]
 
 class BusBookingSerializers(ModelSerializer):
@@ -51,5 +54,6 @@ class BusBookingSerializers(ModelSerializer):
             'get_bustrip',
             'created_at',
             'updated_at',
-            'get_bookerinfo'
+            'get_bookerinfo',
+            'booking_timeout_to_pay_for_each_cycle'
         ]

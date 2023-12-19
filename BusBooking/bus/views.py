@@ -19,7 +19,7 @@ class AllTrips(APIView):
             print("eror ", str(e))
             return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-all_trips = AllTrips.as_view()\
+all_trips = AllTrips.as_view()
 
 # BEFORE WE CREATE BOOKING LETS CHECK IF THE SEATS IS STILL AVAILABLE..
 class CreateBusBooking(APIView):
