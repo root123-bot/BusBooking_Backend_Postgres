@@ -77,3 +77,93 @@ class UpdateProfileAvatar(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 update_avatar = UpdateProfileAvatar.as_view()
+
+class SaveDeviceNotificationToken(APIView):
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        token = request.data.get('token')
+        try:
+            user = get_user_model().objects.get(id=int(user_id))
+            notificationToken = DeviceNotificationToken.objects.filter(user=user)
+
+            if notificationToken.exists():
+                notificationToken = notificationToken.first()
+                notificationToken.deviceNotificationToken = token
+                notificationToken.save()
+                return Response({"details": "Token updated successfully"}, status=status.HTTP_200_OK)
+
+            else:
+                notificationToken = DeviceNotificationToken.objects.create(user=user, deviceNotificationToken=token)
+                notificationToken.save()
+                return Response({"details": "Token added successfully"}, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+save_device_notification_token = SaveDeviceNotificationToken.as_view()
+
+class MarkNotificationAsRead(APIView):
+    def post(self, request, *args, **kwargs):
+        id = request.data.get('notification_id')
+
+        try: 
+            notification = Notification.objects.get(id=int(id))
+
+            notification.is_read  = True
+            notification.save()
+            return Response({
+                "message": "Successful",
+            }, status=status.HTTP_200_OK)
+        
+        except Exception as err:
+            print("Error ", err)
+            return Response(
+                {"details": str(err)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+mark_notification_as_read = MarkNotificationAsRead.as_view()
+
+class ClearAllNotificationOfUser(APIView):
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        try:
+            user = get_user_model().objects.get(id=int(user_id))
+            notifications = Notification.objects.filter(receiver=user, is_deleted=False)
+            for notification in notifications:
+                notification.is_deleted = True
+                notification.is_read = True
+                notification.save()
+            return Response({"details": "success"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print("error ", e)
+            return Response({ "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+clear_all_notification_of_user = ClearAllNotificationOfUser.as_view()
+
+class MarkNotificationDeleted(APIView):
+    def post(self, request):
+        notification_id = request.data.get("notification_id")
+        try:
+            notification = Notification.objects.get(id=int(notification_id))
+            notification.is_deleted = True
+            notification.is_read = True
+            notification.save()
+            serialize = NotificationSerializer(notification)
+            return Response(serialize.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            print("error ", e)
+            return Response({ "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+mark_notification_deleted = MarkNotificationDeleted.as_view()
+
+class FetchNotificationOfUser(APIView):
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        user = get_user_model().objects.get(id=int(user_id))
+        notifications = Notification.objects.filter(receiver=user, is_deleted=False)
+        notifications = reversed(notifications)
+        serialize = NotificationSerializer(notifications, many=True)
+        return Response(serialize.data, status=status.HTTP_200_OK)
+
+fetch_notification_of_user = FetchNotificationOfUser.as_view()

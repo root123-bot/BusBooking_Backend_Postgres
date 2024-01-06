@@ -57,3 +57,11 @@ class BusBookingSerializers(ModelSerializer):
             'get_bookerinfo',
             'booking_timeout_to_pay_for_each_cycle'
         ]
+
+class BusSeatSerializers(ModelSerializer):
+    class Meta:
+        model = BusSeat
+        fields = [
+            'id',
+            'seat_label'
+        ]

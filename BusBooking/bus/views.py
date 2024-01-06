@@ -21,6 +21,21 @@ class AllTrips(APIView):
         
 all_trips = AllTrips.as_view()
 
+class CustomerBookings(APIView):
+    def post(self,  request):
+        try:
+            user_id = request.data.get('user_id')
+            user = get_user_model().objects.get(id=int(user_id))
+            bookings = BusBooking.objects.filter(user=user, status="BOOKED_PAID")
+            serialize = BusBookingSerializers(bookings, many=True)
+            return Response(serialize.data, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            print("eror ", str(e))
+            return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+customer_bookings = CustomerBookings.as_view()
+
 # BEFORE WE CREATE BOOKING LETS CHECK IF THE SEATS IS STILL AVAILABLE..
 class CreateBusBooking(APIView):
     def post(self, request):

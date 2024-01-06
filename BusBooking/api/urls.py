@@ -6,6 +6,11 @@ from BusBooking.main.views import *
 from BusBooking.bus.views import *
 
 urlpatterns = [
+    url(r'clearallnotificationofuser/$', clear_all_notification_of_user, name='clearallnotificationbyuser'),
+    url(r'marknotificationdeleted/$', mark_notification_deleted, name='marknotificationdeleted'),
+    url(r'fetchnotificationofuser/$', fetch_notification_of_user, name='fetchnotificationofuser'),
+    url(r'savedevicenotificationtoken', save_device_notification_token, name='save_device_notification_token'),
+    url(r'customerbookings/$', customer_bookings, name='customerbookings'),
     url(r'deletebooking/$', delete_booking, name="deletebooking"),
     url(r'createbooking/$', create_booking, name="createbooking"),
     url(r'alltrips/$', all_trips, name='bustrips'),

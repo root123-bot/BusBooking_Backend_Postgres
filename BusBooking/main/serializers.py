@@ -8,3 +8,19 @@ class AvatarSerializer(ModelSerializer):
             'id',
             'get_image'
         ]
+
+
+class NotificationSerializer(ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = [
+            'id',
+            'heading',
+            'body',
+            'created_at',
+            'is_read',
+            'is_deleted',
+            'get_booking',
+            'get_receiver',
+            'is_associted_with_booking',
+        ]
