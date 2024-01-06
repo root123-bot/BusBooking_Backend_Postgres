@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(DeviceAuthModel)
 admin.site.register(DeviceNotificationToken)
 admin.site.register(Avatar)
+admin.site.register(Notification)

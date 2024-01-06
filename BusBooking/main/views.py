@@ -159,11 +159,16 @@ mark_notification_deleted = MarkNotificationDeleted.as_view()
 
 class FetchNotificationOfUser(APIView):
     def post(self, request):
-        user_id = request.data.get("user_id")
-        user = get_user_model().objects.get(id=int(user_id))
-        notifications = Notification.objects.filter(receiver=user, is_deleted=False)
-        notifications = reversed(notifications)
-        serialize = NotificationSerializer(notifications, many=True)
-        return Response(serialize.data, status=status.HTTP_200_OK)
+        try:
+            user_id = request.data.get("user_id")
+            user = get_user_model().objects.get(id=int(user_id))
+            print('THE USER ID ', user.id)
+            print('NOTIFICATIONS ', Notification.objects.all())
+            notifications = Notification.objects.filter(receiver=user, is_deleted=False)
+            notifications = reversed(notifications)
+            serialize = NotificationSerializer(notifications, many=True)
+            return Response(serialize.data, status=status.HTTP_200_OK)
+        except Exception as err:
+            return Response({ "details": str(err) }, status=status.HTTP_400_BAD_REQUEST)
 
 fetch_notification_of_user = FetchNotificationOfUser.as_view()

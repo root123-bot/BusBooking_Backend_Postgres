@@ -29,7 +29,7 @@ class Notification(models.Model):
     is_associated_with_booking = models.BooleanField(default=False)
     booking = models.ForeignKey(BusBooking, on_delete=models.CASCADE, blank=True, null=True)
     is_read = models.BooleanField(default=False)
-    is_deleted = models.BooleanField(default=True)
+    is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
